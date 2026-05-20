@@ -106,7 +106,6 @@ BUILD SUCCESS
 
 and all tests should pass.
 
----
 
 # Automated Grade Feedback
 

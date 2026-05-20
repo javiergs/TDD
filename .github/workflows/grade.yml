@@ -1,0 +1,52 @@
+name: Auto Grade
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  grade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Run tests
+        run: mvn test
+        continue-on-error: true
+
+      - name: Show grade
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+
+          TOTAL=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+          FAILURES=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+          ERRORS=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*errors="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+
+          FAILED=$((FAILURES + ERRORS))
+          PASSED=$((TOTAL - FAILED))
+
+          if [ "$TOTAL" -eq 0 ]; then
+            SCORE=0
+          else
+            SCORE=$((PASSED * 100 / TOTAL))
+          fi
+
+          echo "- Total tests: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- Passed tests: $PASSED" >> $GITHUB_STEP_SUMMARY
+          echo "- Failed tests: $FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "- Estimated score: $SCORE%" >> $GITHUB_STEP_SUMMARY
+
+          echo ""
+          echo "Grade Summary"
+          echo "-------------"
+          echo "Total tests: $TOTAL"
+          echo "Passed tests: $PASSED"
+          echo "Failed tests: $FAILED"
+          echo "Estimated score: $SCORE%"

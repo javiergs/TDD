@@ -105,3 +105,28 @@ BUILD SUCCESS
 ```
 
 and all tests should pass.
+
+---
+
+# Automated Grade Feedback
+
+This repository includes an automated GitHub Actions workflow.
+Every time you push code to GitHub:
+
+- the project is compiled,
+- all test cases are executed,
+- a summary of passed and failed tests is generated.
+
+The workflow also provides an estimated score based on the percentage of passing tests.
+
+Example:
+
+```text
+
+Total tests: 16
+
+Passed tests: 12
+
+Failed tests: 4
+
+Estimated score: 75%

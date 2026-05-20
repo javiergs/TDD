@@ -6,13 +6,14 @@ on:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  
+
 jobs:
   grade:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -20,17 +21,27 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Run tests
+      - name: Run Tests
         run: mvn test
         continue-on-error: true
 
-      - name: Show grade
+      - name: Show Grade Summary
+        if: always()
         run: |
           echo "## Test Results" >> $GITHUB_STEP_SUMMARY
 
-          TOTAL=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-          FAILURES=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
-          ERRORS=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*errors="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s}')
+          if [ ! -d "target/surefire-reports" ]; then
+            echo "- Total tests: 0" >> $GITHUB_STEP_SUMMARY
+            echo "- Passed tests: 0" >> $GITHUB_STEP_SUMMARY
+            echo "- Failed tests: 0" >> $GITHUB_STEP_SUMMARY
+            echo "- Estimated score: 0%" >> $GITHUB_STEP_SUMMARY
+            echo "No test reports were found."
+            exit 0
+          fi
+
+          TOTAL=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*tests="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s+0}')
+          FAILURES=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*failures="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s+0}')
+          ERRORS=$(grep -h "testsuite" target/surefire-reports/*.xml | sed -n 's/.*errors="\([0-9]*\)".*/\1/p' | awk '{s+=$1} END {print s+0}')
 
           FAILED=$((FAILURES + ERRORS))
           PASSED=$((TOTAL - FAILED))
@@ -46,10 +57,11 @@ jobs:
           echo "- Failed tests: $FAILED" >> $GITHUB_STEP_SUMMARY
           echo "- Estimated score: $SCORE%" >> $GITHUB_STEP_SUMMARY
 
-          echo ""
           echo "Grade Summary"
           echo "-------------"
           echo "Total tests: $TOTAL"
           echo "Passed tests: $PASSED"
           echo "Failed tests: $FAILED"
           echo "Estimated score: $SCORE%"
+
+          exit 0

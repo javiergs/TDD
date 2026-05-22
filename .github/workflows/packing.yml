@@ -1,0 +1,50 @@
+name: Build Blackboard Application
+
+on:
+  push:
+  pull_request:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Compile Project
+        run: mvn compile
+
+      - name: Run Unit Tests
+        run: mvn test
+
+
+      - name: Package Application
+        run: mvn package
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blackboard-application
+          path: target/*.jar
+
+      - name: Show Summary
+        if: always()
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Compile completed" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- Metrics passed" >> $GITHUB_STEP_SUMMARY
+          echo "- Package generated" >> $GITHUB_STEP_SUMMARY

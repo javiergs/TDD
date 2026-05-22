@@ -27,7 +27,7 @@ jobs:
       - name: Compile Project
         run: mvn compile
 
-     - name: Run Tests
+      - name: Run Tests
         run: mvn test
         continue-on-error: true
         
@@ -46,5 +46,4 @@ jobs:
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "- Compile completed" >> $GITHUB_STEP_SUMMARY
           echo "- Tests passed" >> $GITHUB_STEP_SUMMARY
-          echo "- Metrics passed" >> $GITHUB_STEP_SUMMARY
           echo "- Package generated" >> $GITHUB_STEP_SUMMARY

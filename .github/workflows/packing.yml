@@ -26,10 +26,6 @@ jobs:
 
       - name: Compile Project
         run: mvn compile
-
-      - name: Run Tests
-        run: mvn test
-        continue-on-error: true
         
       - name: Package Application
         run: mvn package
